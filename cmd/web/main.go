@@ -7,12 +7,18 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Soul-Remix/snippet-box/internal/models"
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type dbContext struct {
+	snippets *models.SnippetModel
+}
+
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
+	errorLog  *log.Logger
+	infoLog   *log.Logger
+	dbContext *dbContext
 }
 
 func main() {
@@ -32,6 +38,9 @@ func main() {
 	app := application{
 		infoLog:  infoLog,
 		errorLog: errorLog,
+		dbContext: &dbContext{
+			snippets: &models.SnippetModel{DB: db},
+		},
 	}
 
 	srv := &http.Server{
