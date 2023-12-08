@@ -7,7 +7,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 
 	"github.com/Soul-Remix/snippet-box/internal/models"
@@ -19,11 +22,12 @@ type dbContext struct {
 }
 
 type application struct {
-	errorLog      *log.Logger
-	infoLog       *log.Logger
-	dbContext     *dbContext
-	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	dbContext      *dbContext
+	templateCache  map[string]*template.Template
+	formDecoder    *form.Decoder
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -40,6 +44,8 @@ func main() {
 	}
 	defer db.Close()
 
+	sessionManager := createSession(db)
+
 	templateCache, err := newTemplateCache()
 	if err != nil {
 		errorLog.Fatal(err)
@@ -48,10 +54,11 @@ func main() {
 	formDecoder := form.NewDecoder()
 
 	app := application{
-		infoLog:       infoLog,
-		errorLog:      errorLog,
-		templateCache: templateCache,
-		formDecoder:   formDecoder,
+		infoLog:        infoLog,
+		errorLog:       errorLog,
+		sessionManager: sessionManager,
+		templateCache:  templateCache,
+		formDecoder:    formDecoder,
 		dbContext: &dbContext{
 			snippets: &models.SnippetModel{DB: db},
 		},
@@ -78,4 +85,13 @@ func openDB(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func createSession(db *sql.DB) *scs.SessionManager {
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+
+	sessionManager.Store = mysqlstore.New(db)
+
+	return sessionManager
 }

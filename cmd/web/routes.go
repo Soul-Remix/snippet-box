@@ -22,7 +22,6 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/snippet/create", app.snippetCreateForm)
 	router.HandlerFunc(http.MethodPost, "/snippet/create", app.snippetCreatePost)
 
-	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders, app.sessionManager.LoadAndSave)
 	return standard.Then(router)
-
 }
