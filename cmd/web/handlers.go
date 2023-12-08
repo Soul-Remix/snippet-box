@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/Soul-Remix/snippet-box/internal/models"
+	"github.com/Soul-Remix/snippet-box/internal/validator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -46,11 +47,21 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	data.Snippet = snippet
 
 	app.render(w, http.StatusOK, "view.html", data)
+}
 
+type snippetCreateForm struct {
+	Title   string
+	Content string
+	Expires int
+	validator.Validator
 }
 
 func (app *application) snippetCreateForm(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+
+	data.Form = &snippetCreateForm{
+		Expires: 365,
+	}
 
 	app.render(w, http.StatusOK, "create.html", data)
 }
@@ -61,14 +72,30 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.serverError(w, err)
 	}
 
-	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("content")
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 	}
 
-	id, err := app.dbContext.snippets.Insert(title, content, expires)
+	form := snippetCreateForm{
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Expires: expires,
+	}
+
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field should not be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field should not be more than 100 characters")
+	form.CheckField(validator.NotBlank(form.Content), "content", "This field should not be blank")
+	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "title", "This field should be one of this values: 1, 7 or 365")
+
+	if !form.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusBadRequest, "create.html", data)
+		return
+	}
+
+	id, err := app.dbContext.snippets.Insert(form.Title, form.Content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
