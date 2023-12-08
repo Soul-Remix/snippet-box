@@ -20,6 +20,7 @@ import (
 
 type dbContext struct {
 	snippets *models.SnippetModel
+	users    *models.UserModel
 }
 
 type application struct {
@@ -62,6 +63,7 @@ func main() {
 		formDecoder:    formDecoder,
 		dbContext: &dbContext{
 			snippets: &models.SnippetModel{DB: db},
+			users:    &models.UserModel{DB: db},
 		},
 	}
 
