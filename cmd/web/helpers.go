@@ -81,9 +81,7 @@ func (app *application) isAuthenticated(r *http.Request) bool {
 	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
 	if !ok {
 		dest := r.URL.Path
-		fmt.Println(dest)
 		savedDest := app.sessionManager.GetString(r.Context(), "loginDest")
-		fmt.Println(savedDest)
 		if savedDest == "" {
 			app.sessionManager.Put(r.Context(), "loginDest", dest)
 		}

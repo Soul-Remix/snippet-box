@@ -243,9 +243,6 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	dest := app.sessionManager.PopString(r.Context(), "loginDest")
 
-	fmt.Println("==============")
-	fmt.Println(dest)
-
 	if dest != "" {
 		http.Redirect(w, r, dest, http.StatusSeeOther)
 	} else {
