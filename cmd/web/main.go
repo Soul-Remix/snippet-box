@@ -30,11 +30,13 @@ type application struct {
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
+	debugMode      bool
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dsn := flag.String("dsn", "snippet:pass@/snippetbox?parseTime=true", "MySQl data source name")
+	debug := flag.Bool("debug", false, "Run in debug mode")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -61,6 +63,7 @@ func main() {
 		sessionManager: sessionManager,
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
+		debugMode:      *debug,
 		dbContext: &dbContext{
 			snippets: &models.SnippetModel{DB: db},
 			users:    &models.UserModel{DB: db},
