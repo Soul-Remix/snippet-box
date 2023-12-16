@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -111,8 +110,6 @@ func TestUserSignup(t *testing.T) {
 
 	_, _, body := ts.get(t, "/user/signup")
 	validCSRFToken := extractCSRFToken(t, body)
-
-	fmt.Printf(validCSRFToken)
 
 	const (
 		validName     = "Bob"
