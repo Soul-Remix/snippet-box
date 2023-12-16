@@ -241,9 +241,16 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
-	fmt.Println(id)
+	dest := app.sessionManager.PopString(r.Context(), "loginDest")
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	fmt.Println("==============")
+	fmt.Println(dest)
+
+	if dest != "" {
+		http.Redirect(w, r, dest, http.StatusSeeOther)
+	} else {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
 }
 
 func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
