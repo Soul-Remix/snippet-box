@@ -88,7 +88,7 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusBadRequest, "create.html", data)
+		app.render(w, http.StatusUnprocessableEntity, "create.html", data)
 		return
 	}
 
@@ -135,13 +135,13 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
-		app.render(w, http.StatusBadRequest, "signup.html", data)
+		app.render(w, http.StatusUnprocessableEntity, "signup.html", data)
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(form.Password), 12)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.clientError(w, http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -151,7 +151,7 @@ func (app *application) userSignupPost(w http.ResponseWriter, r *http.Request) {
 			data := app.newTemplateData(r)
 			form.AddFieldError("email", "email address is already in use")
 			data.Form = form
-			app.render(w, http.StatusBadRequest, "signup.html", data)
+			app.render(w, http.StatusUnprocessableEntity, "signup.html", data)
 		} else {
 			app.serverError(w, err)
 		}
